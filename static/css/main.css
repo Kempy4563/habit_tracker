@@ -186,3 +186,7 @@ centered within the allotted space */
 
 
 }
+
+.headernew__link:hover {
+  color: #f9dba0;
+}
