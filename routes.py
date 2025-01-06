@@ -66,3 +66,33 @@ def add_habit():
     return render_template(
         "add_habit.html", title="Habit Tracker - Add Habit", selected_date=today
     )
+
+@pages.route("/delete")
+def delete_habit_index():
+    date_str = request.args.get("date")
+    if date_str:
+        selected_date = datetime.datetime.fromisoformat(date_str)
+    else:
+        selected_date = today_at_midnight()
+
+    habits_on_date = current_app.db.habits.find({"added": {"$lte": selected_date}})
+
+    return render_template(
+        "delete.html",
+        habits=habits_on_date,
+        selected_date=selected_date,
+        title="Habit Tracker - Home",
+    )
+
+@pages.route("/delete_habit", methods=["POST"])
+def delete_habit():
+    print("delete_habit function called")
+    print(request.form)
+    habit_id = request.form.get("habitId")
+    print(habit_id)
+    current_app.db.habits.delete_one({"_id": habit_id})
+
+    return redirect(url_for(".delete_habit_index"))
+
+
+
