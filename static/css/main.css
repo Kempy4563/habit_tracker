@@ -190,3 +190,10 @@ centered within the allotted space */
 .headernew__link:hover {
   color: #f9dba0;
 }
+
+.crossbox-icon {
+  width: 20px;
+  height: 20px;
+  margin-left: 10px;
+  vertical-align: middle;
+}

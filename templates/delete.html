@@ -6,7 +6,7 @@
         {% if completed %}
             <div class="habit">
                 <p class="habit__name">
-                    + Delete: {{ habit["name"] }}
+                    {{ habit["name"] }}
                 </p>
             </div>
         {% else %}
@@ -14,8 +14,9 @@
             <form method="POST" class="habit__form" action="{{ url_for('habits.delete_habit') }}">
                 <input type="hidden" id="habitId" name="habitId" value="{{ habit['_id'] }}" />
                 <button type="submit" class="habit__button">
-                   - Delete {{ habit["name"] }}
+                    {{ habit["name"] }}
                 </button>
+<img src="{{ url_for('static', filename='img/delete.png') }}" alt="Crossbox" class="crossbox-icon" style="float: right;">
             </form>
             </div>
         {% endif %}
