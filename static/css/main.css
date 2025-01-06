@@ -176,3 +176,13 @@ centered within the allotted space */
   background-color: unset;
   cursor: pointer;
 }
+
+.headernew__link {
+  width: 30%;
+  text-align: center;
+  text-decoration: none;
+    color: #fff; /* sets the text color to white */
+    margin-left: -50px; /* moves the text 20px to the left */
+
+
+}

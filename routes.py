@@ -29,18 +29,34 @@ def index():
     else:
         selected_date = today_at_midnight()
 
+    print("Selected date:", selected_date)
+
     habits_on_date = current_app.db.habits.find({"added": {"$lte": selected_date}})
+    print("Habits on date:", habits_on_date)
+
+    habits_on_date_list = list(habits_on_date)
+    print("Habits on date list:", habits_on_date_list)
+
     completions = [
         habit["habit"]
         for habit in current_app.db.completions.find({"date": selected_date})
     ]
 
+    # show "all habits completed" message only if the selected date is the current date
+    if selected_date == today_at_midnight():
+        all_habits_completed = all(habit["_id"] in completions for habit in habits_on_date_list)
+    else:
+        all_habits_completed = False
+
+    print("all_habits_completed:", all_habits_completed)
+
     return render_template(
         "index.html",
-        habits=habits_on_date,
+        habits=habits_on_date_list,
         selected_date=selected_date,
         completions=completions,
         title="Habit Tracker - Home",
+        all_habits_completed=all_habits_completed,
     )
 
 

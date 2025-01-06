@@ -14,10 +14,10 @@
     <body>
         <header class="header">
             <h1 class="header__logo">
-            <a href="{{ url_for('habits.index') }}" class="header__link"> Habits</a>
+            <a href="{{ url_for('habits.index') }}" class="header__link">Daily Habits</a>
             </h1>
             {% if "add" not in request.endpoint %}
-            <a href="{{ url_for('habits.add_habit') }}" class ="header__link">+Add new</a>
+            <a href="{{ url_for('habits.add_habit') }}" class ="headernew__link">+Add new</a>
             <a href="{{ url_for('habits.delete_habit_index') }}" class ="header__link">-Delete</a>
 
             {% endif %}
@@ -40,6 +40,10 @@
 
             {% endfor %}
         </section>
+            {% if all_habits_completed %}
+                <p class="well-done">Well done! You completed all your daily habits.</p>
+            {% endif %}
+
             {% block main_content %}
             {% endblock %}
         </main>
