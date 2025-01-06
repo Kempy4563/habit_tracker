@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+
+{% block main_content %}
+    <section class="habit-list">
+    {% for habit in habits %}
+        {% if completed %}
+            <div class="habit">
+                <p class="habit__name">
+                    + Delete: {{ habit["name"] }}
+                </p>
+            </div>
+        {% else %}
+            <div class="habit">
+            <form method="POST" class="habit__form" action="{{ url_for('habits.delete_habit') }}">
+                <input type="hidden" id="habitId" name="habitId" value="{{ habit['_id'] }}" />
+                <button type="submit" class="habit__button">
+                   - Delete {{ habit["name"] }}
+                </button>
+            </form>
+            </div>
+        {% endif %}
+    {% endfor %}
+    </section>
+{% endblock %}
