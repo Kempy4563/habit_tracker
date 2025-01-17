@@ -6,7 +6,8 @@ pages = Blueprint(
     "habits", __name__, template_folder="templates", static_folder="static"
 )
 
-
+# Add a context processor function that can be accessed in html templates. This function returns a date range
+# of 7 days before and after the selected date
 @pages.context_processor
 def add_calc_date_range():
     def date_range(start: datetime.datetime):
