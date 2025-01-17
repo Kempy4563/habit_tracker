@@ -29,10 +29,18 @@ def index():
     else:
         selected_date = today_at_midnight()
 
+
+
     # This will retrieve all habits that were added on or before the selected_date, or habits that have
     # a frequency set to "weekly" and were added on any date.
     habits_on_date = current_app.db.habits.find({"added": {"$lte": selected_date}}).sort("_id")
-    #print(list(habits_on_date))
+
+    # This will retrieve all habits that were completed on the selected_date
+    completions = [
+        habit["habit"] for habit in current_app.db.completions.find({"date": selected_date})
+    ]
+
+    # print(list(habits_on_date))
     print(type(habits_on_date))
     habits_dict = dict(enumerate(habits_on_date))
 
@@ -58,7 +66,6 @@ def index():
     print(weekly_habits)
     print(monthly_habits)
 
-
     # Only display weekly habits on the days they are scheduled to occur
     weekly_habits_to_display = []
     for habit in weekly_habits:
@@ -75,12 +82,8 @@ def index():
 
     print(f"monthly habits to display: {monthly_habits_to_display}")
 
-
     habits_to_display = daily_habits + weekly_habits_to_display + monthly_habits_to_display
     print(f"habits to display: {habits_to_display}")
-
-    # Get completions for the selected date
-    completions = current_app.db.completions.find({"date": selected_date})
 
     return render_template(
         "index.html",
@@ -90,11 +93,14 @@ def index():
         title="Habit Tracker - Home",
     )
 
+
 @pages.route("/complete", methods=["POST"])
 def complete():
+    print("complete function called")
     date_string = request.form.get("date")
     date = datetime.datetime.fromisoformat(date_string)
     habit = request.form.get("habitId")
+    print(f"habit {habit} selected to be completed on {date}")
     current_app.db.completions.insert_one({"date": date, "habit": habit})
 
     return redirect(url_for(".index", date=date_string))
@@ -114,6 +120,7 @@ def add_habit():
         "add_habit.html", title="Habit Tracker - Add Habit", selected_date=today
     )
 
+
 @pages.route("/delete")
 def delete_habit_index():
     date_str = request.args.get("date")
@@ -131,6 +138,7 @@ def delete_habit_index():
         title="Habit Tracker - Home",
     )
 
+
 @pages.route("/delete_habit", methods=["POST"])
 def delete_habit():
     print("delete_habit function called")
@@ -140,6 +148,3 @@ def delete_habit():
     current_app.db.habits.delete_one({"_id": habit_id})
 
     return redirect(url_for(".delete_habit_index"))
-
-
-
