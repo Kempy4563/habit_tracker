@@ -197,3 +197,42 @@ centered within the allotted space */
   margin-left: 10px;
   vertical-align: middle;
 }
+
+.dropdown {
+    /* Add your styles here */
+    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    padding: 5px;
+    border-radius: 4px;
+    border: 3px solid black;
+    font-family: inherit;
+    font-size: inherit;
+    text-align: left;
+
+}
+
+.form__button {
+  font-size: inherit;
+  background: #f9dba0;
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 0.5rem 2.5rem;
+  align-self: flex-end;
+  border: 3px solid black;
+  padding: 10px 20px;
+  margin-top: 10px; /* Add some space above the button */
+
+}
+
+.form__button:hover {
+    background-color: #e9cd87;
+}
+
+.header__link {
+  width: 30%;
+  text-align: center;
+  text-decoration: none;
+  color: #fff;
+  margin-left: 10px;
+  margin-bottom: 10px; /* added margin-bottom property */
+}

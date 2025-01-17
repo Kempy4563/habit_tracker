@@ -17,8 +17,11 @@
             <a href="{{ url_for('habits.index') }}" class="header__link">Daily Habits</a>
             </h1>
             {% if "add" not in request.endpoint %}
+            <div class="container">
+
             <a href="{{ url_for('habits.add_habit') }}" class ="headernew__link">+Add new</a>
             <a href="{{ url_for('habits.delete_habit_index') }}" class ="header__link">-Delete</a>
+            </div>
 
             {% endif %}
         </header>
