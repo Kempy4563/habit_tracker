@@ -29,10 +29,6 @@ def index():
     else:
         selected_date = today_at_midnight()
 
-
-
-    # This will retrieve all habits that were added on or before the selected_date, or habits that have
-    # a frequency set to "weekly" and were added on any date.
     habits_on_date = current_app.db.habits.find({"added": {"$lte": selected_date}}).sort("_id")
 
     # This will retrieve all habits that were completed on the selected_date
@@ -52,6 +48,7 @@ def index():
     daily_habits = []
     weekly_habits = []
     monthly_habits = []
+    weekday_habits = []
 
     # Filter habits by frequency
     for key, value in habits_dict.items():
@@ -61,10 +58,13 @@ def index():
             weekly_habits.append(value)
         elif value["frequency"] == "monthly":
             monthly_habits.append(value)
+        elif value["frequency"] == "weekdays":
+            weekday_habits.append(value)
 
-    print(daily_habits)
-    print(weekly_habits)
-    print(monthly_habits)
+    #print(daily_habits)
+    #print(weekly_habits)
+    #print(monthly_habits)
+    print(weekday_habits)
 
     # Only display weekly habits on the days they are scheduled to occur
     weekly_habits_to_display = []
@@ -72,7 +72,7 @@ def index():
         if selected_date.weekday() == habit["added"].weekday():
             weekly_habits_to_display.append(habit)
 
-    print(f"weekly habits to display: {weekly_habits_to_display}")
+    #print(f"weekly habits to display: {weekly_habits_to_display}")
 
     # Only display monthly habits on the days they are scheduled to occur
     monthly_habits_to_display = []
@@ -80,10 +80,18 @@ def index():
         if selected_date.day == habit["added"].day:
             monthly_habits_to_display.append(habit)
 
-    print(f"monthly habits to display: {monthly_habits_to_display}")
+    #print(f"monthly habits to display: {monthly_habits_to_display}")
 
-    habits_to_display = daily_habits + weekly_habits_to_display + monthly_habits_to_display
-    print(f"habits to display: {habits_to_display}")
+    # Only display weekday habits on weekdays
+    weekday_habits_to_display = []
+    for habit in weekday_habits:
+        if selected_date.weekday() < 5:  # Monday is 0, Friday is 4
+            weekday_habits_to_display.append(habit)
+
+    print(f"weekdays habits to display: {weekday_habits_to_display}")
+
+    habits_to_display = daily_habits + weekly_habits_to_display + monthly_habits_to_display + weekday_habits_to_display
+    #print(f"habits to display: {habits_to_display}")
 
     return render_template(
         "index.html",

@@ -6,10 +6,12 @@
         {% set completed = habit["_id"] in completions %}
         {% set is_weekly = habit["frequency"] == "weekly" %}
         {% set is_monthly = habit["frequency"] == "monthly" %}
+        {% set is_weekday = habit["frequency"] == "weekday" %}
         {% set is_due_today =
             (is_weekly and selected_date.weekday() == habit["added"].weekday()) or
             (is_monthly and selected_date.day == habit["added"].day) or
-            (not is_weekly and not is_monthly) %}
+            (is_weekday and selected_date.weekday() == habit["weekday"]) or
+            (not is_weekly and not is_monthly and not is_weekday) %}
 
         {% if is_due_today %}
             {% if completed %}
