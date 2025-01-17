@@ -108,16 +108,21 @@ def complete():
 
 @pages.route("/add", methods=["GET", "POST"])
 def add_habit():
-    today = today_at_midnight()
+
+    date_str = request.args.get("date")
+    if date_str:
+        selected_date = datetime.datetime.fromisoformat(date_str)
+    else:
+        selected_date = today_at_midnight()
 
     if request.form:
         frequency = request.form.get("frequency")
         current_app.db.habits.insert_one(
-            {"_id": uuid.uuid4().hex, "added": today, "name": request.form.get("habit"), "frequency": frequency}
+            {"_id": uuid.uuid4().hex, "added": selected_date, "name": request.form.get("habit"), "frequency": frequency}
         )
 
     return render_template(
-        "add_habit.html", title="Habit Tracker - Add Habit", selected_date=today
+        "add_habit.html", title="Habit Tracker - Add Habit", selected_date=selected_date
     )
 
 
