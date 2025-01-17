@@ -29,36 +29,66 @@ def index():
     else:
         selected_date = today_at_midnight()
 
-    print("Selected date:", selected_date)
+    # This will retrieve all habits that were added on or before the selected_date, or habits that have
+    # a frequency set to "weekly" and were added on any date.
+    habits_on_date = current_app.db.habits.find({"added": {"$lte": selected_date}}).sort("_id")
+    #print(list(habits_on_date))
+    print(type(habits_on_date))
+    habits_dict = dict(enumerate(habits_on_date))
 
-    habits_on_date = current_app.db.habits.find({"added": {"$lte": selected_date}})
-    print("Habits on date:", habits_on_date)
+    # Filter habits by frequency
+    for habit in habits_on_date:
+        print(habit)
 
-    habits_on_date_list = list(habits_on_date)
-    print("Habits on date list:", habits_on_date_list)
+    # Declare the lists
+    daily_habits = []
+    weekly_habits = []
+    monthly_habits = []
 
-    completions = [
-        habit["habit"]
-        for habit in current_app.db.completions.find({"date": selected_date})
-    ]
+    # Filter habits by frequency
+    for key, value in habits_dict.items():
+        if value["frequency"] == "daily":
+            daily_habits.append(value)
+        elif value["frequency"] == "weekly":
+            weekly_habits.append(value)
+        elif value["frequency"] == "monthly":
+            monthly_habits.append(value)
 
-    # show "all habits completed" message only if the selected date is the current date
-    if selected_date == today_at_midnight():
-        all_habits_completed = all(habit["_id"] in completions for habit in habits_on_date_list)
-    else:
-        all_habits_completed = False
+    print(daily_habits)
+    print(weekly_habits)
+    print(monthly_habits)
 
-    print("all_habits_completed:", all_habits_completed)
+
+    # Only display weekly habits on the days they are scheduled to occur
+    weekly_habits_to_display = []
+    for habit in weekly_habits:
+        if selected_date.weekday() == habit["added"].weekday():
+            weekly_habits_to_display.append(habit)
+
+    print(f"weekly habits to display: {weekly_habits_to_display}")
+
+    # Only display monthly habits on the days they are scheduled to occur
+    monthly_habits_to_display = []
+    for habit in monthly_habits:
+        if selected_date.day == habit["added"].day:
+            monthly_habits_to_display.append(habit)
+
+    print(f"monthly habits to display: {monthly_habits_to_display}")
+
+
+    habits_to_display = daily_habits + weekly_habits_to_display + monthly_habits_to_display
+    print(f"habits to display: {habits_to_display}")
+
+    # Get completions for the selected date
+    completions = current_app.db.completions.find({"date": selected_date})
 
     return render_template(
         "index.html",
-        habits=habits_on_date_list,
+        habits=habits_to_display,
         selected_date=selected_date,
         completions=completions,
         title="Habit Tracker - Home",
-        all_habits_completed=all_habits_completed,
     )
-
 
 @pages.route("/complete", methods=["POST"])
 def complete():
@@ -75,8 +105,9 @@ def add_habit():
     today = today_at_midnight()
 
     if request.form:
+        frequency = request.form.get("frequency")
         current_app.db.habits.insert_one(
-            {"_id": uuid.uuid4().hex, "added": today, "name": request.form.get("habit")}
+            {"_id": uuid.uuid4().hex, "added": today, "name": request.form.get("habit"), "frequency": frequency}
         )
 
     return render_template(
