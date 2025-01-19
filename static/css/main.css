@@ -236,3 +236,21 @@ centered within the allotted space */
   margin-left: 10px;
   margin-bottom: 10px; /* added margin-bottom property */
 }
+
+
+
+.habit__text {
+    display: block;
+    cursor: pointer;
+    position: relative;
+}
+
+.habit__icon {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+}
+
+.habit:hover {
+    background-color: #e9cd87;

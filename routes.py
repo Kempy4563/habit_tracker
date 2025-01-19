@@ -6,6 +6,7 @@ pages = Blueprint(
     "habits", __name__, template_folder="templates", static_folder="static"
 )
 
+
 # Add a context processor function that can be accessed in html templates. This function returns a date range
 # of 7 days before and after the selected date
 @pages.context_processor
@@ -15,6 +16,15 @@ def add_calc_date_range():
         return dates
 
     return {"date_range": date_range}
+
+
+def check_outstanding(habits_on_date, selected_date):
+    outstanding = True
+    for habit_id in [habit["_id"] for habit in habits_on_date]:
+        if not current_app.db.completions.find_one({"habit": habit_id, "date": selected_date}):
+            outstanding = False
+            break
+    return outstanding
 
 
 def today_at_midnight():
@@ -37,13 +47,12 @@ def index():
         habit["habit"] for habit in current_app.db.completions.find({"date": selected_date})
     ]
 
+    #outstanding = check_outstanding(habits_on_date, selected_date)
+
     # print(list(habits_on_date))
-    print(type(habits_on_date))
+    #print(type(habits_on_date))
     habits_dict = dict(enumerate(habits_on_date))
 
-    # Filter habits by frequency
-    for habit in habits_on_date:
-        print(habit)
 
     # Declare the lists
     daily_habits = []
@@ -62,10 +71,9 @@ def index():
         elif value["frequency"] == "weekdays":
             weekday_habits.append(value)
 
-    #print(daily_habits)
-    #print(weekly_habits)
-    #print(monthly_habits)
-    print(weekday_habits)
+    # print(daily_habits)
+    # print(weekly_habits)
+    # print(monthly_habits)
 
     # Only display weekly habits on the days they are scheduled to occur
     weekly_habits_to_display = []
@@ -73,7 +81,7 @@ def index():
         if selected_date.weekday() == habit["added"].weekday():
             weekly_habits_to_display.append(habit)
 
-    #print(f"weekly habits to display: {weekly_habits_to_display}")
+    # print(f"weekly habits to display: {weekly_habits_to_display}")
 
     # Only display monthly habits on the days they are scheduled to occur
     monthly_habits_to_display = []
@@ -81,7 +89,7 @@ def index():
         if selected_date.day == habit["added"].day:
             monthly_habits_to_display.append(habit)
 
-    #print(f"monthly habits to display: {monthly_habits_to_display}")
+    # print(f"monthly habits to display: {monthly_habits_to_display}")
 
     # Only display weekday habits on weekdays
     weekday_habits_to_display = []
@@ -89,10 +97,9 @@ def index():
         if selected_date.weekday() < 5:  # Monday is 0, Friday is 4
             weekday_habits_to_display.append(habit)
 
-    print(f"weekdays habits to display: {weekday_habits_to_display}")
 
     habits_to_display = daily_habits + weekly_habits_to_display + monthly_habits_to_display + weekday_habits_to_display
-    #print(f"habits to display: {habits_to_display}")
+
 
     return render_template(
         "index.html",
@@ -100,24 +107,31 @@ def index():
         selected_date=selected_date,
         completions=completions,
         title="Habit Tracker - Home",
+        #outstanding=check_outstanding(habits_on_date, selected_date),
     )
 
 
 @pages.route("/complete", methods=["POST"])
 def complete():
-    print("complete function called")
     date_string = request.form.get("date")
     date = datetime.datetime.fromisoformat(date_string)
     habit = request.form.get("habitId")
-    print(f"habit {habit} selected to be completed on {date}")
-    current_app.db.completions.insert_one({"date": date, "habit": habit})
+
+    # Check if a completion document already exists for the given habit and date
+    completion = current_app.db.completions.find_one({"date": date, "habit": habit})
+
+    if completion:
+        # Completion document already exists, so delete it to revert the habit's completion status
+        current_app.db.completions.delete_one({"date": date, "habit": habit})
+    else:
+        # Completion document does not exist, so insert a new one to mark the habit as completed
+        current_app.db.completions.insert_one({"date": date, "habit": habit})
 
     return redirect(url_for(".index", date=date_string))
 
 
 @pages.route("/add", methods=["GET", "POST"])
 def add_habit():
-
     date_str = request.args.get("date")
     if date_str:
         selected_date = datetime.datetime.fromisoformat(date_str)
@@ -143,7 +157,7 @@ def delete_habit_index():
     else:
         selected_date = today_at_midnight()
 
-    #habits_on_date = current_app.db.habits.find({"added": {"$lte": selected_date}})
+    # habits_on_date = current_app.db.habits.find({"added": {"$lte": selected_date}})
     habits_on_date = current_app.db.habits.find()
 
     return render_template(
