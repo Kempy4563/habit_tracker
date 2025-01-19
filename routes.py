@@ -18,10 +18,16 @@ def add_calc_date_range():
     return {"date_range": date_range}
 
 
-def check_outstanding(habits_on_date, selected_date):
+def check_outstanding(habits_to_display, selected_date):
+    # if there are no habits to display, return False
+    if not habits_to_display:
+        return False
     outstanding = True
-    for habit_id in [habit["_id"] for habit in habits_on_date]:
+    for habit in habits_to_display:
+        habit_id = habit["_id"]
+        # if any habit has not been completed on the selected date, return False
         if not current_app.db.completions.find_one({"habit": habit_id, "date": selected_date}):
+            print(f"Habit '{habit['name']}' has not been completed on {selected_date}")
             outstanding = False
             break
     return outstanding
@@ -47,12 +53,7 @@ def index():
         habit["habit"] for habit in current_app.db.completions.find({"date": selected_date})
     ]
 
-    #outstanding = check_outstanding(habits_on_date, selected_date)
-
-    # print(list(habits_on_date))
-    #print(type(habits_on_date))
     habits_dict = dict(enumerate(habits_on_date))
-
 
     # Declare the lists
     daily_habits = []
@@ -71,9 +72,6 @@ def index():
         elif value["frequency"] == "weekdays":
             weekday_habits.append(value)
 
-    # print(daily_habits)
-    # print(weekly_habits)
-    # print(monthly_habits)
 
     # Only display weekly habits on the days they are scheduled to occur
     weekly_habits_to_display = []
@@ -81,7 +79,6 @@ def index():
         if selected_date.weekday() == habit["added"].weekday():
             weekly_habits_to_display.append(habit)
 
-    # print(f"weekly habits to display: {weekly_habits_to_display}")
 
     # Only display monthly habits on the days they are scheduled to occur
     monthly_habits_to_display = []
@@ -89,7 +86,6 @@ def index():
         if selected_date.day == habit["added"].day:
             monthly_habits_to_display.append(habit)
 
-    # print(f"monthly habits to display: {monthly_habits_to_display}")
 
     # Only display weekday habits on weekdays
     weekday_habits_to_display = []
@@ -97,9 +93,12 @@ def index():
         if selected_date.weekday() < 5:  # Monday is 0, Friday is 4
             weekday_habits_to_display.append(habit)
 
-
+    # Create a list of all habits to display
     habits_to_display = daily_habits + weekly_habits_to_display + monthly_habits_to_display + weekday_habits_to_display
 
+    # Check if any habits contained in habits_to_display have not been completed on the selected date and set this to
+    # True or False
+    outstanding = check_outstanding(habits_to_display, selected_date)
 
     return render_template(
         "index.html",
@@ -107,7 +106,7 @@ def index():
         selected_date=selected_date,
         completions=completions,
         title="Habit Tracker - Home",
-        #outstanding=check_outstanding(habits_on_date, selected_date),
+        outstanding=outstanding,
     )
 
 
@@ -157,7 +156,6 @@ def delete_habit_index():
     else:
         selected_date = today_at_midnight()
 
-    # habits_on_date = current_app.db.habits.find({"added": {"$lte": selected_date}})
     habits_on_date = current_app.db.habits.find()
 
     return render_template(
