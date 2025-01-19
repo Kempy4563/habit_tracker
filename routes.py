@@ -143,7 +143,8 @@ def delete_habit_index():
     else:
         selected_date = today_at_midnight()
 
-    habits_on_date = current_app.db.habits.find({"added": {"$lte": selected_date}})
+    #habits_on_date = current_app.db.habits.find({"added": {"$lte": selected_date}})
+    habits_on_date = current_app.db.habits.find()
 
     return render_template(
         "delete.html",
